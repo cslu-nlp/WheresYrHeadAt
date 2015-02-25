@@ -101,8 +101,9 @@ class DependencyParser(JSONable):
                 self.classifier.update(y, yhat, phi, alpha)
             # apply predicted move
             guess.apply_move(yhat)
+            # apply
+            self.classifier.time += 1
         logging.debug("Final parse:\t{!r}".format(guess))
-        self.classifier.time += 1
 
     def fit(self, golds, epochs, alpha=1):
         golds = list(DependencyParse.from_DPS(gold) for gold in golds)
