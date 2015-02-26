@@ -191,7 +191,8 @@ class DependencyParse(object):
         # stack and queue, tokens and tags
         slen = min(self.depth, 3)
         qlen = min(len(self.queue) - 1, 3)
-        tstack = self.stack[-slen:]
+        # we index the stack backwards so that `s_0` is the TOP
+        tstack = self.stack[-slen:][::-1]
         tqueue = self.queue[:qlen]
         sw = ["s_{}:w='{}'".format(i, utoken) for (i, utoken) in
               enumerate(utokens[i] for i in tstack)]
@@ -235,8 +236,9 @@ class DependencyParse(object):
         # word/tag unigrams from the queue
         for (w, t) in zip(qw, qt):
             yield "{}/{}".format(w, t)
-        # s0 word/tag unigram
-        yield "{}/{}".format(sw[-1], st[-1])
+        # word/tag unigrams from the stack
+        for (w, t) in zip(sw, st):
+            yield "{}/{}".format(w, t)
         # valence and gap bigrams and trigrams
         yield "{},{}".format(sw[-1], lsv)
         yield "{},{}".format(st[-1], lsv)
@@ -278,11 +280,8 @@ class DependencyParse(object):
             yield "{},{},{}".format(sw[-1], qw[0], gap)
             yield "{},{},{}".format(st[-1], qt[0], gap)
         if len(lst) == 2:
-            # (Ts0, Ts0b1, Ts0b2)
             yield "{},{},{}".format(st[-1], lst[0], lst[1])
         if len(rst) == 2:
-            # (Ts0, Ts0f1, Ts0f2)
             yield "{},{},{}".format(st[-1], rst[0], rst[1])
         if len(st) == 3:
-            # (Ts0, Ts1, Ts2)
             yield "{},{},{}".format(*reversed(st))
