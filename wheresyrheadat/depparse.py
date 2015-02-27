@@ -191,12 +191,11 @@ class DependencyParse(object):
         # stack and queue, tokens and tags
         slen = min(self.depth, 3)
         qlen = min(len(self.queue) - 1, 3)
-        # we index the stack backwards so that `s_0` is the TOP
-        tstack = self.stack[-slen:][::-1]
+        tstack = self.stack[-slen:]
         tqueue = self.queue[:qlen]
-        sw = ["s_{}:w='{}'".format(i, utoken) for (i, utoken) in
+        sw = ["s_{}:w='{}'".format(slen - i - 1, utoken) for (i, utoken) in
               enumerate(utokens[i] for i in tstack)]
-        st = ["s_{}:t='{}'".format(i, tag) for (i, tag) in 
+        st = ["s_{}:t='{}'".format(slen - i - 1, tag) for (i, tag) in 
               enumerate(self.tags[i] for i in tstack)]
         qw = ["q_{}:w='{}'".format(i, utoken) for (i, utoken) in
               enumerate(utokens[i] for i in tqueue)]
@@ -284,4 +283,4 @@ class DependencyParse(object):
         if len(rst) == 2:
             yield "{},{},{}".format(st[-1], rst[0], rst[1])
         if len(st) == 3:
-            yield "{},{},{}".format(*reversed(st))
+            yield "{},{},{}".format(st[-1], st[-2], st[-3])

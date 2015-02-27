@@ -44,7 +44,7 @@ class DependencyParser(JSONable):
                  seed=None):
         self.random = Random(seed)
         self.classifier = classifier_constructor(default=Move.shift)
-        # FIXME(kbg) is this necessary? Could the API be improved here?
+        # FIXME(kbg) Could the API be improved to avoid this?
         self.classifier.classes.update(DependencyParse.moves)
 
     def parse(self, tokens, tags):
@@ -88,9 +88,8 @@ class DependencyParser(JSONable):
             yhat = max(valid_moves, key=lambda move: scores[move])
             logging.debug("yhat:\t{}.".format(yhat))
             # use gold parse to get true move
-            gold_moves = DependencyParser._gold_moves(valid_moves,
-                                                      guess, gold)
-            # FIXME(kbg) I do not yet know why this would happen
+            gold_moves = DependencyParser.gold_moves(valid_moves,
+                                                     guess, gold)
             if not gold_moves:
                 logging.debug("Premature termination (no gold moves).")
                 return
@@ -116,7 +115,7 @@ class DependencyParser(JSONable):
         self.classifier.finalize()
 
     @staticmethod
-    def _gold_moves(valid_moves, guess, gold):
+    def gold_moves(valid_moves, guess, gold):
         """
         The arc-hybrid dynamic oracle comes from Goldberg & Nivre 2013
         (TACL) where it is described in detail. The operations are:
@@ -143,7 +142,7 @@ class DependencyParser(JSONable):
             # but if the second-highest element in the stack is the head
             # of top of the stack, we must not left-reduce
             if len(guess.stack) >= 2 and \
-                    s0_head == gold.heads[guess.stack[-2]]:
+                   s0_head == gold.heads[guess.stack[-2]]:
                 gold_moves.remove(Move.lreduce)
         if Move.shift in gold_moves:
             # if there are any dependencies between the front of the queue
