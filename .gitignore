@@ -1,6 +1,5 @@
 __pycache__/
 *.py[co]
+*.json.gz
 *.log
 *.sh
-*.json.gz
-data/
