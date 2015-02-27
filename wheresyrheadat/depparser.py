@@ -24,7 +24,7 @@ import logging
 
 from random import Random
 
-from nlup import AveragedPerceptron, JSONable, Timer
+from nlup import Accuracy, AveragedPerceptron, JSONable, Timer
 
 from .move import Move
 from .depparse import DependencyParse
@@ -64,7 +64,8 @@ class DependencyParser(JSONable):
                 continue
             # otherwise, use classifier to predict
             valid_moves = parse.valid_moves()
-            scores = self.classifier.scores(parse.features())
+            phi = parse.features()
+            scores = self.classifier.scores(phi)
             yhat = max(valid_moves, key=lambda move: scores[move])
             parse.apply_move(yhat)
         return parse
@@ -92,7 +93,7 @@ class DependencyParser(JSONable):
                                                      guess, gold)
             if not gold_moves:
                 logging.debug("Premature termination (no gold moves).")
-                return
+                return guess
             y = max(gold_moves, key=lambda move: scores[move])
             logging.debug("y:\t{}.".format(y))
             # update weights if we made the wrong guess
@@ -103,15 +104,19 @@ class DependencyParser(JSONable):
             # apply
             self.classifier.time += 1
         logging.debug("Final parse:\t{!r}".format(guess))
+        return guess
 
     def fit(self, golds, epochs, alpha=1):
         golds = list(DependencyParse.from_DPS(gold) for gold in golds)
         for i in range(1, 1 + epochs):
             logging.info("Epoch {:>2}.".format(i))
+            cx = Accuracy()
             with Timer():
                 self.random.shuffle(golds)
                 for gold in golds:
-                    self.fit_one(gold, alpha)
+                    guess = self.fit_one(gold, alpha)
+                    cx.batch_update(gold.heads, guess.heads)
+            logging.info("Accuracy: {:.4f}.".format(cx.accuracy))
         self.classifier.finalize()
 
     @staticmethod
