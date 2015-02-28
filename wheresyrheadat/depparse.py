@@ -177,16 +177,16 @@ class DependencyParse(object):
     # feature extraction
 
     @tupleify
-    def features(self, clip=CLIP):
+    def features(self):
         """
         Extract features from the current parse configuration
         """
         utokens = [token.upper() for token in self.tokens]
         yield "*bias*"
-        depth = "depth={}".format(min(self.depth, clip))
+        depth = "depth={}".format(min(self.depth, CLIP))
         yield depth
         # string distance between top of stack and top of queue
-        gap = "gap={}".format(min(self.q0 - self.s0, clip))
+        gap = "gap={}".format(min(self.q0 - self.s0, CLIP))
         yield gap
         # stack and queue, tokens and tags
         slen = min(self.depth, 3)
@@ -203,7 +203,7 @@ class DependencyParse(object):
               enumerate(self.tags[i] for i in tqueue)]
         # leftmost children of top of stack, tokens and tags
         ls0 = self.ldeps[self.s0]
-        lsv = "|s_0:ldeps|={}".format(min(len(ls0), clip))
+        lsv = "|s_0:ldeps|={}".format(min(len(ls0), CLIP))
         yield lsv
         ls0 = ls0[:2]
         lsw = ["s_0:ldep_{}:w='{}'".format(i, utoken) for (i, utoken) in
@@ -212,7 +212,7 @@ class DependencyParse(object):
                enumerate(self.tags[i] for i in ls0)]
         # rightmost children of top of stack
         rs0 = self.rdeps[self.s0]
-        rsv = "|s_0:rdeps|={}".format(min(len(rs0), clip))
+        rsv = "|s_0:rdeps|={}".format(min(len(rs0), CLIP))
         yield rsv
         rs0 = rs0[-2:]
         rsw = ["s_0:rdep_{}:w='{}'".format(i, utoken) for (i, utoken) in
@@ -221,7 +221,7 @@ class DependencyParse(object):
                enumerate(self.tags[i] for i in rs0)]
         # leftmost children of top of queue
         lq0 = self.ldeps[self.q0]
-        lqv = "|q_0:ldeps|={}".format(min(len(lq0), clip))
+        lqv = "|q_0:ldeps|={}".format(min(len(lq0), CLIP))
         yield lqv
         lq0 = lq0[:2]
         lqw = ["q_0:ldep_{}:w='{}'".format(i, utoken) for (i, utoken) in
@@ -248,12 +248,12 @@ class DependencyParse(object):
         if qw: # and thus, qt
             # bigrams
             yield "{},{}".format(sw[-1], qw[0])
+            yield "{},{}".format(st[-1], qt[0])
             yield "{}/{},{}".format(qw[0], qt[0], sw[-1])
             yield "{}/{},{}".format(qw[0], qt[0], st[-1])
             yield "{}/{},{}".format(sw[-1], st[-1], qw[0])
             yield "{}/{},{}".format(sw[-1], st[-1], qt[0])
             yield "{}/{},{}/{}".format(sw[-1], st[-1], qw[0], qt[0])
-            yield "{},{}".format(st[-1], qt[0])
             if len(qt) > 1:
                 yield "{},{}".format(qt[0], qt[1])
             # tag trigrams
@@ -262,7 +262,7 @@ class DependencyParse(object):
             if len(qt) >= 2:
                 yield "{},{},{}".format(st[-1], qt[0], qt[1])
                 if len(qt) == 3:
-                    yield "{},{},{}".format(*qt)
+                    yield "{},{},{}".format(qt[0], qt[1], qt[2])
             if lst:
                 yield "{},{},{}".format(st[-1], lst[0], qt[0])
             if rst:
