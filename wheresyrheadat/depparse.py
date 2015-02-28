@@ -26,11 +26,12 @@ partial) dependency parse.
 
 from .move import Move
 
-from nlup import tupleify, DependencyParsedSentence
+from nlup import isnumberlike, tupleify, DependencyParsedSentence
 
 
 NYL = "*NYL*"
 ROOT_LABEL = "*ROOT*"
+NUMBER = "*NUMBER*"
 
 CLIP = 8  # clip numerical counts at this value
 
@@ -181,7 +182,8 @@ class DependencyParse(object):
         """
         Extract features from the current parse configuration
         """
-        utokens = [token.upper() for token in self.tokens]
+        utokens = [NUMBER if isnumberlike(token) 
+                          else token.upper() for token in self.tokens]
         yield "*bias*"
         depth = "depth={}".format(min(self.depth, CLIP))
         yield depth
@@ -193,11 +195,11 @@ class DependencyParse(object):
         qlen = min(len(self.queue) - 1, 3)
         tstack = self.stack[-slen:]
         tqueue = self.queue[:qlen]
-        sw = ["s_{}:w='{}'".format(slen - i - 1, utoken) for (i, utoken) in
+        sw = ["s_{}:w='{}'".format(slen - i - 1, token) for (i, token) in
               enumerate(utokens[i] for i in tstack)]
         st = ["s_{}:t='{}'".format(slen - i - 1, tag) for (i, tag) in 
               enumerate(self.tags[i] for i in tstack)]
-        qw = ["q_{}:w='{}'".format(i, utoken) for (i, utoken) in
+        qw = ["q_{}:w='{}'".format(i, token) for (i, token) in
               enumerate(utokens[i] for i in tqueue)]
         qt = ["q_{}:t='{}'".format(i, tag) for (i, tag) in 
               enumerate(self.tags[i] for i in tqueue)]
@@ -206,7 +208,7 @@ class DependencyParse(object):
         lsv = "|s_0:ldeps|={}".format(min(len(ls0), CLIP))
         yield lsv
         ls0 = ls0[:2]
-        lsw = ["s_0:ldep_{}:w='{}'".format(i, utoken) for (i, utoken) in
+        lsw = ["s_0:ldep_{}:w='{}'".format(i, token) for (i, token) in
                enumerate(utokens[i] for i in ls0)]
         lst = ["s_0:ldep_{}:t='{}'".format(i, tag) for (i, tag) in 
                enumerate(self.tags[i] for i in ls0)]
@@ -215,7 +217,7 @@ class DependencyParse(object):
         rsv = "|s_0:rdeps|={}".format(min(len(rs0), CLIP))
         yield rsv
         rs0 = rs0[-2:]
-        rsw = ["s_0:rdep_{}:w='{}'".format(i, utoken) for (i, utoken) in
+        rsw = ["s_0:rdep_{}:w='{}'".format(i, token) for (i, token) in
                enumerate(utokens[i] for i in rs0)]
         rst = ["s_0:rdep_{}:t='{}'".format(i, tag) for (i, tag) in 
                enumerate(self.tags[i] for i in rs0)]
@@ -224,7 +226,7 @@ class DependencyParse(object):
         lqv = "|q_0:ldeps|={}".format(min(len(lq0), CLIP))
         yield lqv
         lq0 = lq0[:2]
-        lqw = ["q_0:ldep_{}:w='{}'".format(i, utoken) for (i, utoken) in
+        lqw = ["q_0:ldep_{}:w='{}'".format(i, token) for (i, token) in
                enumerate(utokens[i] for i in lq0)]
         lqt = ["q_0:ldep_{}:t='{}'".format(i, tag) for (i, tag) in
                enumerate(self.tags[i] for i in lq0)]
