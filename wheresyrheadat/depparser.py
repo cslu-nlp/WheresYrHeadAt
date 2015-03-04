@@ -32,6 +32,8 @@ from .depparse import DependencyParse
 
 EPOCHS = 10
 
+MOVES = tuple(Move)
+
 
 class DependencyParser(JSONable):
 
@@ -40,12 +42,10 @@ class DependencyParser(JSONable):
     Goldberg & Nivre
     """
 
-    def __init__(self, classifier_constructor=AveragedPerceptron,
-                 seed=None):
+    def __init__(self, seed=None):
         self.random = Random(seed)
-        self.classifier = classifier_constructor(default=Move.shift)
-        # FIXME(kbg) Could the API be improved to avoid this?
-        self.classifier.classes.update(DependencyParse.moves)
+        self.classifier = AveragedPerceptron(seed=seed)
+        self.classifier.register_classes(MOVES)
 
     def parse(self, tokens, tags):
         """
