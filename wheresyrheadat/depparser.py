@@ -87,7 +87,6 @@ class DependencyParser(JSONable):
             phi = guess.features()
             scores = self.classifier.scores(phi)
             yhat = max(valid_moves, key=lambda move: scores[move])
-            logging.debug("yhat:\t{}.".format(yhat))
             # use gold parse to get true move
             gold_moves = DependencyParser.gold_moves(valid_moves,
                                                      guess, gold)
@@ -95,7 +94,6 @@ class DependencyParser(JSONable):
                 logging.debug("Premature termination (no gold moves).")
                 return guess
             y = max(gold_moves, key=lambda move: scores[move])
-            logging.debug("y:\t{}.".format(y))
             # update weights if we made the wrong guess
             if y != yhat:
                 self.classifier.update(y, yhat, phi, alpha)
