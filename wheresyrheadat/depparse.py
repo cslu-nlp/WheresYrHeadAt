@@ -29,7 +29,7 @@ from .move import Move
 from nlup import isnumberlike, tupleify, DependencyParsedSentence
 
 
-NYL = "*NYL*"
+NYL = "_"
 ROOT_LABEL = "*ROOT*"
 NUMBER = "*NUMBER*"
 
@@ -45,7 +45,7 @@ class DependencyParse(object):
         assert L == len(tags) == len(heads) == len(labels)
         self.tokens = (ROOT_LABEL,) + tuple(tokens)
         self.tags = (ROOT_LABEL,) + tuple(tags)
-        self.heads = [-L] + list(heads)
+        self.heads = [None] + list(heads)
         self.labels = [NYL] + list(labels)
         self.stack = [0]
         self.q0 = 1  # index of front of queue
@@ -73,7 +73,7 @@ class DependencyParse(object):
     @classmethod
     def from_scratch(cls, tokens, tags):
         L = len(tokens)
-        heads = [-L for _ in range(L)]
+        heads = [None for _ in range(L)]
         labels = [NYL for _ in range(L)]
         retval = cls(tokens, tags, heads, labels)
         return retval
