@@ -24,7 +24,7 @@ import logging
 
 from argparse import ArgumentParser
 
-from nlup import depparsed_corpus, tagged_corpus, Accuracy, IO
+from nlup import depparsed_corpus, tagged_corpus, Accuracy
 
 from .depparser import DependencyParser, EPOCHS
 
@@ -62,25 +62,25 @@ else:
 parser = None
 if args.read:
     logging.info("Reading pretrained parser '{}'.".format(args.read))
-    parser = IO(parser.load)(args.read)
+    parser = DependencyParser.load(args.read)
 elif args.train:
     logging.info("Training model on '{}'.".format(args.train))
     parser = DependencyParser()
-    parser.fit(IO(depparsed_corpus)(args.train), args.epochs)
+    parser.fit(depparsed_corpus(args.train), args.epochs)
 # else unreachable
 # output block
 if args.write:
     logging.info("Writing trained parser to '{}'.".format(args.write))
-    IO(parser.dump)(args.write)
+    parser.dump(args.write)
 elif args.parse:
     logging.info("Parsing unparsed data '{}'.".format(args.parse))
-    for sentence in IO(tagged_corpus)(args.parse):
+    for sentence in tagged_corpus(args.parse):
         print(parser.parse(sentence.tokens, sentence.tags).to_DPS())
         print()
 elif args.evaluate:
     logging.info("Evaluating parsed data '{}'.".format(args.evaluate))
     cx = Accuracy()
-    for gold in IO(depparsed_corpus)(args.evaluate):
+    for gold in depparsed_corpus(args.evaluate):
         guess = parser.parse(gold.tokens, gold.tags).to_DPS()
         cx.batch_update(gold.heads, guess.heads)
     print("Accuracy: {:.4f} [{:.4f}, {:.4f}].".format(cx.accuracy,
